@@ -7,6 +7,7 @@ Caddy supports [dynamic config loading](https://caddyserver.com/docs/json/admin/
 
 <details>
 <summary>This configuration file combination eventually configures Caddy to respond with `OK`. Store this configuration file in caddy storage under the key `config/caddy.json`</summary>
+
 ```json
 {
 	"admin": {
@@ -61,6 +62,7 @@ Caddy supports [dynamic config loading](https://caddyserver.com/docs/json/admin/
 	}
 }
 ```
+
 </details>
 
 Run Caddy with the following config:
