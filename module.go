@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	caddy "github.com/caddyserver/caddy/v2"
+	"github.com/caddyserver/caddy/v2/caddyconfig"
 	"github.com/caddyserver/certmagic"
 	"go.uber.org/zap"
 )
@@ -28,6 +29,9 @@ type StorageLoader struct {
 
 	// The storage key at which the configuration is to be found
 	Key string `json:"key,omitempty"`
+
+	// The adapter to use to convert the storage's contents to Caddy JSON.
+	Adapter string `json:"adapter,omitempty"`
 
 	storage certmagic.Storage
 	logger  *zap.Logger
@@ -64,12 +68,32 @@ func (sl *StorageLoader) Provision(ctx caddy.Context) error {
 	return nil
 }
 
+// Validate checks for the prerequisites of the module, e.g. the adapter if configured.
+func (sl *StorageLoader) Validate() error {
+	if sl.Adapter == "" {
+		return nil
+	}
+	if caddyconfig.GetAdapter(sl.Adapter) == nil {
+		return fmt.Errorf("unknown storage adapter: %s", sl.Adapter)
+	}
+	return nil
+}
+
 // LoadConfig reads the configuration from the storage
 func (sl *StorageLoader) LoadConfig(ctx caddy.Context) ([]byte, error) {
 	sl.logger.Info("loading config from storage", zap.String("key", sl.Key))
-	return sl.storage.Load(ctx, sl.Key)
+	bs, err := sl.storage.Load(ctx, sl.Key)
+	if err != nil {
+		return nil, err
+	}
+	if sl.Adapter == "" {
+		return bs, nil
+	}
+	bs, _, err = caddyconfig.GetAdapter(sl.Adapter).Adapt(bs, nil)
+	return bs, err
 }
 
 var _ caddy.Module = (*StorageLoader)(nil)
 var _ caddy.Provisioner = (*StorageLoader)(nil)
+var _ caddy.Validator = (*StorageLoader)(nil)
 var _ caddy.ConfigLoader = (*StorageLoader)(nil)
