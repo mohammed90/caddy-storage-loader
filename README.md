@@ -5,6 +5,8 @@ Caddy supports [dynamic config loading](https://caddyserver.com/docs/json/admin/
 
 ## Example
 
+### Loading JSON configuration
+
 <details>
 <summary>This configuration file combination eventually configures Caddy to respond with `OK`. Store this configuration file in caddy storage under the key `config/caddy.json`</summary>
 
@@ -73,6 +75,35 @@ Run Caddy with the following config:
 		"config": {
 			"load": {
 				"module": "storage"
+			}
+		}
+	}
+}
+```
+
+### Loading Caddyfile configuration
+
+<details>
+<summary>This configuration file combination eventually configures Caddy to respond with `OK`. Store this configuration file in caddy storage under the key `config/Caddyfile`</summary>
+
+```caddyfile
+example.com {
+	respond "Howdy!"
+}
+```
+
+</details>
+
+Run Caddy with the following config:
+```json
+{
+	"admin": {
+		"listen":"localhost:2019",
+		"config": {
+			"load": {
+				"module": "storage",
+				"adapter": "caddyfile",
+				"key": "config/Caddyfile"
 			}
 		}
 	}
